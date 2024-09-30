@@ -41,13 +41,11 @@ python3 main.py --jbl-address <JBL Playlist IP Address> [OPTIONS]
 - `--jbl-port`: Port of the JBL speaker (default: 80)
 - `--jbl-pin`: PIN of the JBL speaker (default: 1234)
 - `--interval`: Interval to send keep-alive requests in seconds (default: 60)
-- `--use-play-state`: Use play state to turn on/off the JBL speaker instead of power state. In some cases sending power state requests doesn't work, in that case you can try to use play state requests.
-- `--turn-off`: Turn off the JBL speaker when the PC is off. If this option is not specified, the speaker will remain on even when the PC is off.
 
 Example:
 
 ```
-python3 main.py --pc-address 192.168.1.100 --jbl-address 192.168.1.200 --interval 120 --use-play-state --turn-off
+python3 main.py --pc-address 192.168.1.100 --jbl-address 192.168.1.200 --interval 120
 ```
 
 ## Automatic Service Setup
@@ -67,7 +65,7 @@ sudo python3 setup.py --jbl-address JBL_IP [OPTIONS]
 Example:
 
 ```
-sudo python3 setup.py --jbl-address 192.168.1.200 --pc-address 192.168.1.100 --interval 120 --use-play-state --turn-off
+sudo python3 setup.py --jbl-address 192.168.1.200 --pc-address 192.168.1.100 --interval 120
 ```
 
 This will create and start the `jbl_keeper.service` automatically.
@@ -78,10 +76,10 @@ The script performs the following actions:
 
 1. Checks if the specified PC is online (if a PC address is provided)
 2. If the PC is online or no PC address is specified:
-   - Attempts to turn on the JBL speaker using either power state or play state
-   - Prints the result of the attempt
-3. If the PC is offline and the `--turn-off` option is specified:
-   - Attempts to turn off the JBL speaker
+   - Checks the current mode and play status of the JBL speaker
+   - If the speaker is in a non-Bluetooth/Aux mode but playing music through a cable:
+     - Sets the speaker to Bluetooth/Aux mode
+   - Sends a keep-alive request by setting the play state to pause
    - Prints the result of the attempt
 4. Waits for the specified interval before repeating the process
 
@@ -90,6 +88,7 @@ The script performs the following actions:
 - If the script fails to communicate with the JBL speaker, ensure that the IP address and port are correct and that the speaker is connected to the same network as the machine running the script.
 - If the PC status check fails, verify that the PC's IP address is correct and that it's accessible from the machine running the script.
 - Check the console output for any error messages that may indicate the cause of issues.
+- When changing the speaker from a non-Bluetooth/Aux Mode to Bluetooth/Aux mode, it may stop playing music if the volume is too low. If you experience unexpected music interruptions, try increasing the volume slightly.
 
 ## Contributing
 

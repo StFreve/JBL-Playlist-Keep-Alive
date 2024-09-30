@@ -47,6 +47,14 @@ class JBLSpeaker:
         response = requests.get(f"{self.base_url}/SET/netRemote.sys.power?pin={self.pin}&sid={self.session_id}&value={state}")
         return response.status_code == 200
 
+    def get_play_status(self):
+        if not self.session_id:
+            self._get_session_id()
+        response = requests.get(f"{self.base_url}/GET/netRemote.play.status?pin={self.pin}&sid={self.session_id}")
+        if response.status_code == 200:
+            return int(response.text.split("<u8>")[1].split("</u8>")[0])
+        return None
+    
     def get_play_state(self):
         if not self.session_id:
             self._get_session_id()
@@ -61,6 +69,51 @@ class JBLSpeaker:
         response = requests.get(f"{self.base_url}/SET/netRemote.play.control?pin={self.pin}&sid={self.session_id}&value={state}")
         return response.status_code == 200
 
+    def get_play_info_duration(self):
+        if not self.session_id:
+            self._get_session_id()
+        response = requests.get(f"{self.base_url}/GET/netRemote.play.info.duration?pin={self.pin}&sid={self.session_id}")
+        if response.status_code == 200:
+            return int(response.text.split("<u32>")[1].split("</u32>")[0])
+        return None
+
+    def get_mode(self):
+        if not self.session_id:
+            self._get_session_id()
+        response = requests.get(f"{self.base_url}/GET/netRemote.sys.mode?pin={self.pin}&sid={self.session_id}")
+        if response.status_code == 200:
+            return int(response.text.split("<u32>")[1].split("</u32>")[0])
+        return None
+    
+    def set_mode(self, mode):
+        if not self.session_id:
+            self._get_session_id()
+        response = requests.get(f"{self.base_url}/SET/netRemote.sys.mode?pin={self.pin}&sid={self.session_id}&value={mode}")
+        return response.status_code == 200
+
+    def send_keep_alive_request(self):
+        if self.get_mode() != 1 and self.get_play_status() == 0 and self.get_play_info_duration() != 0:
+            # Speaker is in non-Bluetooth/Aux Mode, but playing music through cable
+            # If we try to set play state to 2 (pause) - it will cause music to start playing
+            # So we need to set the speaker to Bluetooth/Aux Mode first
+            if not self.set_mode(1):
+                print("Failed to set self speaker to Bluetooh/Aux Mode")
+                return False
+            print("Speaker set Bluetooh/Aux Mode")
+        
+        if (self.get_mode() == 1 and self.get_play_status() == 2) or self.get_play_info_duration() == 0:
+            # If we are in Bluetooth/Aux mode and nothing is playing through Bluetooth we can just set play state to 2 (pause)
+            # to keep the speaker on
+            if not self.set_play_state(2):
+                print("Failed to set play state to 2 (pause)")
+                return False
+            print("Set play state to 2 (pause)")
+        else:
+            print("Speaker is in Wireless Mode and playing music")
+            return False
+        
+        return True
+
 def keep_jbl_up(args):
     """Main function to keep the JBL speaker up."""
     jbl = JBLSpeaker(args.jbl_address, args.jbl_port, args.jbl_pin)
@@ -69,22 +122,10 @@ def keep_jbl_up(args):
         try:
             if args.pc_address == None or is_pc_up(args.pc_address):
                 # Send keep alive request to the speaker
-                if args.use_play_state:
-                    if jbl.set_play_state(jbl.get_play_state()):
-                        print("JBL speaker turned on")
-                    else:
-                        print("Failed to turn on JBL speaker")
+                if jbl.send_keep_alive_request():
+                    print("Keep Alive Request Sent")
                 else:
-                    if jbl.set_power_state(1):
-                        print("JBL speaker turned on")
-                    else:
-                        print("Failed to turn on JBL speaker")
-            elif args.turn_off:
-                # Turn off the speaker
-                if jbl.set_power_state(0):
-                    print("JBL speaker turned off")
-                else:
-                    print("Failed to turn off JBL speaker")
+                    print("Failed to send keep alive request to JBL speaker")
         except Exception as e:
             print(f"Error communicating with JBL speaker: {e}")
        
@@ -97,8 +138,6 @@ if __name__ == "__main__":
     parser.add_argument("--jbl-port", type=str, help="Port of the JBL speaker", default=80)
     parser.add_argument("--jbl-pin", type=str, help="PIN of the JBL speaker", default=1234)
     parser.add_argument("--interval", type=int, help="Interval to send keep alive requests", default=60)
-    parser.add_argument("--use-play-state", help="Use play state to turn on/off the JBL speaker", action="store_true")
-    parser.add_argument("--turn-off", help="Turn off the JBL speaker when PC is off", action="store_true")
 
     args = parser.parse_args()
     keep_jbl_up(args)
