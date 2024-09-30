@@ -20,11 +20,19 @@ class JBLSpeaker:
         self.pin = pin
         self.session_id = None
 
+    def __del__(self):
+        if self.session_id:
+            self._delete_session()
+            self.session_id = None
+
     def _get_session_id(self):
         response = requests.get(f"{self.base_url}/CREATE_SESSION?pin={self.pin}")
         if response.status_code == 200:
             self.session_id = response.text.split("<sessionId>")[1].split("</sessionId>")[0]
-
+    
+    def _delete_session(self):
+        requests.get(f"{self.base_url}/DELETE_SESSION?pin={self.pin}&sid={self.session_id}")
+    
     def get_power_state(self):
         if not self.session_id:
             self._get_session_id()
