@@ -39,6 +39,14 @@ class JBLSpeaker:
         response = requests.get(f"{self.base_url}/SET/netRemote.sys.power?pin={self.pin}&sid={self.session_id}&value={state}")
         return response.status_code == 200
 
+    def get_play_state(self):
+        if not self.session_id:
+            self._get_session_id()
+        response = requests.get(f"{self.base_url}/GET/netRemote.play.control?pin={self.pin}&sid={self.session_id}")
+        if response.status_code == 200:
+            return int(response.text.split("<u8>")[1].split("</u8>")[0])
+        return None
+
     def set_play_state(self, state):
         if not self.session_id:
             self._get_session_id()
@@ -54,7 +62,7 @@ def keep_jbl_up(args):
             if args.pc_address == None or is_pc_up(args.pc_address):
                 # Send keep alive request to the speaker
                 if args.use_play_state:
-                    if jbl.set_play_state(1):
+                    if jbl.set_play_state(jbl.get_play_state()):
                         print("JBL speaker turned on")
                     else:
                         print("Failed to turn on JBL speaker")
