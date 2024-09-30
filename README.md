@@ -7,6 +7,7 @@ JBL Playlist when connected through cable is always goes to sleep when there is 
 - Automatically checks if your PC is online (optional)
 - Keeps the JBL speaker on when the PC is detected or always if no PC address is specified
 - Optionally uses play state instead of power state to control the speaker
+- Can turn off the speaker when the PC is off (optional)
 - Can run as a background service
 - Easy to configure and set up
 
@@ -41,11 +42,12 @@ python3 main.py --jbl-address <JBL Playlist IP Address> [OPTIONS]
 - `--jbl-pin`: PIN of the JBL speaker (default: 1234)
 - `--interval`: Interval to send keep-alive requests in seconds (default: 60)
 - `--use-play-state`: Use play state to turn on/off the JBL speaker instead of power state. In some cases sending power state requests doesn't work, in that case you can try to use play state requests.
+- `--turn-off`: Turn off the JBL speaker when the PC is off. If this option is not specified, the speaker will remain on even when the PC is off.
 
 Example:
 
 ```
-python3 main.py --pc-address 192.168.1.100 --jbl-address 192.168.1.200 --interval 120 --use-play-state
+python3 main.py --pc-address 192.168.1.100 --jbl-address 192.168.1.200 --interval 120 --use-play-state --turn-off
 ```
 
 ## Automatic Service Setup
@@ -65,7 +67,7 @@ sudo python3 setup.py --jbl-address JBL_IP [OPTIONS]
 Example:
 
 ```
-sudo python3 setup.py --jbl-address 192.168.1.200 --pc-address 192.168.1.100 --interval 120 --use-play-state
+sudo python3 setup.py --jbl-address 192.168.1.200 --pc-address 192.168.1.100 --interval 120 --use-play-state --turn-off
 ```
 
 This will create and start the `jbl_keeper.service` automatically.
@@ -78,7 +80,7 @@ The script performs the following actions:
 2. If the PC is online or no PC address is specified:
    - Attempts to turn on the JBL speaker using either power state or play state
    - Prints the result of the attempt
-3. If the PC is offline:
+3. If the PC is offline and the `--turn-off` option is specified:
    - Attempts to turn off the JBL speaker
    - Prints the result of the attempt
 4. Waits for the specified interval before repeating the process

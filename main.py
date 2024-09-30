@@ -45,15 +45,15 @@ class JBLSpeaker:
         response = requests.get(f"{self.base_url}/SET/netRemote.play.control?pin={self.pin}&sid={self.session_id}&value={state}")
         return response.status_code == 200
 
-def keep_jbl_up(pc_address, jbl_address, jbl_port, jbl_pin, interval, use_play_state):
+def keep_jbl_up(args):
     """Main function to keep the JBL speaker up."""
-    jbl = JBLSpeaker(jbl_address, jbl_port, jbl_pin)
+    jbl = JBLSpeaker(args.jbl_address, args.jbl_port, args.jbl_pin)
     
     while True:
         try:
-            if pc_address == None or is_pc_up(pc_address):
+            if args.pc_address == None or is_pc_up(args.pc_address):
                 # Send keep alive request to the speaker
-                if use_play_state:
+                if args.use_play_state:
                     if jbl.set_play_state(1):
                         print("JBL speaker turned on")
                     else:
@@ -63,7 +63,7 @@ def keep_jbl_up(pc_address, jbl_address, jbl_port, jbl_pin, interval, use_play_s
                         print("JBL speaker turned on")
                     else:
                         print("Failed to turn on JBL speaker")
-            else:
+            elif args.turn_off:
                 # Turn off the speaker
                 if jbl.set_power_state(0):
                     print("JBL speaker turned off")
@@ -72,7 +72,7 @@ def keep_jbl_up(pc_address, jbl_address, jbl_port, jbl_pin, interval, use_play_s
         except Exception as e:
             print(f"Error communicating with JBL speaker: {e}")
        
-        time.sleep(interval)
+        time.sleep(args.interval)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Keep JBL speaker on.")
@@ -82,6 +82,7 @@ if __name__ == "__main__":
     parser.add_argument("--jbl-pin", type=str, help="PIN of the JBL speaker", default=1234)
     parser.add_argument("--interval", type=int, help="Interval to send keep alive requests", default=60)
     parser.add_argument("--use-play-state", help="Use play state to turn on/off the JBL speaker", action="store_true")
+    parser.add_argument("--turn-off", help="Turn off the JBL speaker when PC is off", action="store_true")
 
     args = parser.parse_args()
-    keep_jbl_up(args.pc_address, args.jbl_address, args.jbl_port, args.jbl_pin, args.interval, args.use_play_state)
+    keep_jbl_up(args)
