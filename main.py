@@ -6,6 +6,7 @@ import platform
 import logging
 import sys
 from logging.handlers import RotatingFileHandler
+from urllib3.connectionpool import log as urllibLogger
 
 def setup_logging():
     logger = logging.getLogger()
@@ -19,6 +20,10 @@ def setup_logging():
     console_handler.setLevel(logging.INFO)
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
+
+    logging.getLogger("requests").setLevel(logging.WARNING)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+    urllibLogger.setLevel(logging.WARNING)
 
     return logger
 
