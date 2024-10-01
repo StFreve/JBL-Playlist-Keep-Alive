@@ -3,13 +3,35 @@ import time
 import requests
 import subprocess
 import platform
+import logging
+import sys
+from logging.handlers import RotatingFileHandler
+
+def setup_logging():
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+
+    # Create formatter
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+
+    # Create console handler and set level to INFO
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setLevel(logging.INFO)
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+
+    return logger
+
+logger = setup_logging()
+
 def is_pc_up(pc_address):
     """Check if the PC is up by pinging it."""
     try:
         if platform.system() == "Windows":
-            subprocess.check_output(["ping", "-n", "1", pc_address])
+            exit_code = subprocess.check_output(["ping", "-n", "1", pc_address])
         else:
-            subprocess.check_output(["ping", "-c", "1", pc_address])
+            exit_code = subprocess.check_output(["ping", "-c", "1", pc_address])
+        logger.debug(f"Ping output: {exit_code}")
         return True
     except subprocess.CalledProcessError:
         return False
@@ -97,19 +119,19 @@ class JBLSpeaker:
             # If we try to set play state to 2 (pause) - it will cause music to start playing
             # So we need to set the speaker to Bluetooth/Aux Mode first
             if not self.set_mode(1):
-                print("Failed to set self speaker to Bluetooh/Aux Mode")
+                logger.error("Failed to set speaker to Bluetooth/Aux Mode")
                 return False
-            print("Speaker set Bluetooh/Aux Mode")
+            logger.info("Speaker set to Bluetooth/Aux Mode")
         
         if (self.get_mode() == 1 and self.get_play_status() == 2) or self.get_play_info_duration() == 0:
             # If we are in Bluetooth/Aux mode and nothing is playing through Bluetooth we can just set play state to 2 (pause)
             # to keep the speaker on
             if not self.set_play_state(2):
-                print("Failed to set play state to 2 (pause)")
+                logger.error("Failed to set play state to 2 (pause)")
                 return False
-            print("Set play state to 2 (pause)")
+            logger.info("Set play state to 2 (pause)")
         else:
-            print("Speaker is in Wireless Mode and playing music")
+            logger.info("Speaker is in Wireless Mode and playing music")
             return False
         
         return True
@@ -120,14 +142,16 @@ def keep_jbl_up(args):
     
     while True:
         try:
-            if args.pc_address == None or is_pc_up(args.pc_address):
+            if args.pc_address is None or is_pc_up(args.pc_address):
                 # Send keep alive request to the speaker
                 if jbl.send_keep_alive_request():
-                    print("Keep Alive Request Sent")
+                    logger.info("Keep Alive Request Sent")
                 else:
-                    print("Failed to send keep alive request to JBL speaker")
+                    logger.error("Failed to send keep alive request to JBL speaker")
+            else:
+                logger.info("PC is not up, skipping keep alive request")
         except Exception as e:
-            print(f"Error communicating with JBL speaker: {e}")
+            logger.exception(f"Error communicating with JBL speaker: {e}")
        
         time.sleep(args.interval)
 

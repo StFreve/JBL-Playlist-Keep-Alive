@@ -1,6 +1,12 @@
 import os
 import sys
 import argparse
+import logging
+
+# Set up logging
+log_file = '/var/log/jbl_keeper.log'
+logging.basicConfig(filename=log_file, level=logging.INFO, 
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 def create_service_file(args):
     command = f"/usr/bin/python3 {os.path.abspath('main.py')} "
@@ -20,9 +26,11 @@ Description=JBL Keeper Service
 After=network.target
 
 [Service]
-    ExecStart={command}
+ExecStart={command}
 Restart=always
 User={args.user}
+StandardOutput=append:{log_file}
+StandardError=append:{log_file}
 
 [Install]
 WantedBy=multi-user.target
@@ -36,14 +44,16 @@ def setup_service(args):
     try:
         with open(service_path, 'w') as f:
             f.write(service_content)
-        print(f"Service file created at {service_path}")
+        logging.info(f"Service file created at {service_path}")
         
         os.system('sudo systemctl daemon-reload')
         os.system('sudo systemctl enable jbl_keeper.service')
         os.system('sudo systemctl start jbl_keeper.service')
-        print("JBL Keeper service has been enabled and started.")
+        logging.info("JBL Keeper service has been enabled and started.")
+        print(f"JBL Keeper service has been set up. Check {log_file} for logs.")
     except PermissionError:
-        print("Error: Unable to create service file. Please run this script with sudo.")
+        logging.error("Unable to create service file. Please run this script with sudo.")
+        print(f"Error: Unable to create service file. Please run this script with sudo. Check {log_file} for details.")
         sys.exit(1)
 
 if __name__ == "__main__":
