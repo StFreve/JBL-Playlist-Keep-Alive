@@ -1,4 +1,4 @@
-# JBL Playlist - Alive Keeper
+# JBL Playlist (FSAPI) - Keep Alive
 
 JBL Playlist when connected through cable is always goes to sleep when there is no audio playing or the volume is too low. This script keeps the JBL speaker alive by sending keep alive requests to the speaker's fsapi.
 
@@ -10,6 +10,7 @@ JBL Playlist when connected through cable is always goes to sleep when there is 
 - Can turn off the speaker when the PC is off (optional)
 - Can run as a background service
 - Easy to configure and set up
+- Uses FSAPI to control the speaker
 
 ## Prerequisites
 
@@ -92,7 +93,7 @@ The script performs the following actions:
 
 ## Contributing
 
-Contributions to improve JBL Speaker Keeper are welcome. Please feel free to submit a Pull Request.
+Contributions to improve JBL Speaker Alive Keeper are welcome. Please feel free to submit a Pull Request.
 
 ## License
 
