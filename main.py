@@ -33,12 +33,31 @@ def is_pc_up(pc_address):
     """Check if the PC is up by pinging it."""
     try:
         if platform.system() == "Windows":
-            exit_code = subprocess.check_output(["ping", "-n", "1", pc_address])
+            # On Windows, ping returns 0 even if host is unreachable
+            # We need to check the output for "TTL=" or "Reply from"
+            result = subprocess.run(
+                ["cmd", "/c", "ping", "-n", "1", pc_address],
+                capture_output=True,
+                text=True,
+                timeout=5,
+                shell=True
+            )
+            return result.returncode == 0 and ("TTL=" in result.stdout or "Reply from" in result.stdout)
         else:
-            exit_code = subprocess.check_output(["ping", "-c", "1", pc_address])
-        logger.debug(f"Ping output: {exit_code}")
-        return True
-    except subprocess.CalledProcessError:
+            # On Linux/Unix, ping returns 0 only if host is reachable
+            result = subprocess.run(
+                ["sh", "-c", "ping", "-c", "1", pc_address],
+                capture_output=True,
+                text=True,
+                timeout=5,
+                shell=True
+            )
+            return result.returncode == 0
+    except subprocess.TimeoutExpired:
+        logger.warning(f"Ping to {pc_address} timed out")
+        return False
+    except Exception as e:
+        logger.error(f"Error pinging {pc_address}: {str(e)}")
         return False
 
 class JBLSpeaker:
