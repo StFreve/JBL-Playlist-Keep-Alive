@@ -36,21 +36,19 @@ def is_pc_up(pc_address):
             # On Windows, ping returns 0 even if host is unreachable
             # We need to check the output for "TTL=" or "Reply from"
             result = subprocess.run(
-                ["cmd", "/c", "ping", "-n", "1", pc_address],
+                ["ping", "-n", "1", pc_address],
                 capture_output=True,
-                text=True,
                 timeout=5,
-                shell=True
+                text=True,
             )
             return result.returncode == 0 and ("TTL=" in result.stdout or "Reply from" in result.stdout)
         else:
             # On Linux/Unix, ping returns 0 only if host is reachable
             result = subprocess.run(
-                ["sh", "-c", "ping", "-c", "1", pc_address],
+                ["ping", "-c", "1", pc_address],
                 capture_output=True,
-                text=True,
                 timeout=5,
-                shell=True
+                text=True,
             )
             return result.returncode == 0
     except subprocess.TimeoutExpired:
