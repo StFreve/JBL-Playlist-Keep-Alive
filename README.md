@@ -27,6 +27,74 @@ JBL Playlist when connected through cable is always goes to sleep when there is 
    pip3 install -r requirements.txt
    ```
 
+## Docker Usage
+
+You can also run this application using Docker and Docker Compose.
+
+### Prerequisites
+
+- Docker
+- Docker Compose
+
+### Quick Start
+
+1. Create a `.env` file (optional) or set environment variables:
+
+   ```bash
+   # Required
+   JBL_ADDRESS=192.168.1.200
+   
+   # Optional
+   PC_ADDRESS=192.168.1.100
+   JBL_PORT=80
+   JBL_PIN=1234
+   INTERVAL=60
+   ```
+
+2. Build and run with Docker Compose:
+
+   ```bash
+   docker-compose up -d
+   ```
+
+3. View logs:
+
+   ```bash
+   docker-compose logs -f
+   ```
+
+4. Stop the container:
+
+   ```bash
+   docker-compose down
+   ```
+
+### Environment Variables
+
+- `PC_ADDRESS`: IP address of the PC (optional). Leave empty to always keep the speaker on.
+- `JBL_ADDRESS`: IP address of the JBL speaker (required, default: 192.168.1.200)
+- `JBL_PORT`: Port of the JBL speaker (optional, default: 80)
+- `JBL_PIN`: PIN of the JBL speaker (optional, default: 1234)
+- `INTERVAL`: Interval in seconds to send keep-alive requests (optional, default: 60)
+
+### Docker Run (without Compose)
+
+You can also run the container directly with `docker run`:
+
+```bash
+docker build -t jbl-keeper .
+docker run -d \
+  --name jbl-keeper \
+  --network host \
+  --restart unless-stopped \
+  -e JBL_ADDRESS=192.168.1.200 \
+  -e PC_ADDRESS=192.168.1.100 \
+  -e INTERVAL=60 \
+  jbl-keeper
+```
+
+**Note:** The container uses `network_mode: host` to allow direct network access to the JBL speaker and to enable ping functionality for PC status checks.
+
 ## Usage
 
 You can run the script manually with:
