@@ -34,7 +34,7 @@ You can also run this application using Docker and Docker Compose.
 ### Prerequisites
 
 - Docker
-- Docker Compose
+- Docker Compose v2 (included with Docker Desktop or install separately)
 
 ### Quick Start
 
@@ -54,19 +54,19 @@ You can also run this application using Docker and Docker Compose.
 2. Build and run with Docker Compose:
 
    ```bash
-   docker-compose up -d
+   docker compose up -d
    ```
 
 3. View logs:
 
    ```bash
-   docker-compose logs -f
+   docker compose logs -f
    ```
 
 4. Stop the container:
 
    ```bash
-   docker-compose down
+   docker compose down
    ```
 
 ### Environment Variables
