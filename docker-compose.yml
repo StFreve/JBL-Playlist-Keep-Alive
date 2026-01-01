@@ -5,21 +5,8 @@ services:
     restart: unless-stopped
     network_mode: host  # Required for ping and direct network access to JBL speaker
     environment:
-      # Optional: IP address of the PC to check if it's online
-      # Leave empty to always keep the speaker on
-      - PC_ADDRESS=${PC_ADDRESS:-}
-      # Required: IP address of the JBL speaker
-      - JBL_ADDRESS=${JBL_ADDRESS:-192.168.1.200}
-      # Optional: Port of the JBL speaker (default: 80)
-      - JBL_PORT=${JBL_PORT:-80}
-      # Optional: PIN of the JBL speaker (default: 1234)
-      - JBL_PIN=${JBL_PIN:-1234}
-      # Optional: Interval in seconds to send keep-alive requests (default: 60)
-      - INTERVAL=${INTERVAL:-60}
-    # Add capabilities for ping if not using host network
-    # cap_add:
-    #   - NET_RAW
-    #   - NET_ADMIN
-    volumes:
-      - ./logs:/app/logs  # Optional: for log persistence
-
+      - PC_ADDRESS=192.168.1.100 # IP address of the PC to check if it's online
+      - JBL_ADDRESS=192.168.1.200 # IP address of the JBL speaker
+      - JBL_PORT=80 # Port of the JBL speaker
+      - JBL_PIN=1234 # PIN of the JBL speaker
+      - INTERVAL=60 # Interval in seconds to send keep-alive requests

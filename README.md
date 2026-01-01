@@ -38,18 +38,7 @@ You can also run this application using Docker and Docker Compose.
 
 ### Quick Start
 
-1. Create a `.env` file (optional) or set environment variables:
-
-   ```bash
-   # Required
-   JBL_ADDRESS=192.168.1.200
-   
-   # Optional
-   PC_ADDRESS=192.168.1.100
-   JBL_PORT=80
-   JBL_PIN=1234
-   INTERVAL=60
-   ```
+1. Edit `docker-compose.yml` to set your environment variables (JBL_ADDRESS, PC_ADDRESS, etc.)
 
 2. Build and run with Docker Compose:
 
