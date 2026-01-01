@@ -1,12 +1,13 @@
 services:
-  jbl-keeper:
+  jbl-keep-alive:
     build: .
-    container_name: jbl-keeper
+    image: stfreve/jbl-keep-alive:latest
+    container_name: jbl-keep-alive
     restart: unless-stopped
     network_mode: host  # Required for ping and direct network access to JBL speaker
     environment:
-      - PC_ADDRESS=192.168.1.100 # IP address of the PC to check if it's online
-      - JBL_ADDRESS=192.168.1.200 # IP address of the JBL speaker
+      - PC_ADDRESS=stfreve-pc # IP address of the PC to check if it's online
+      - JBL_ADDRESS=stfreve-jbl-speaker # IP address of the JBL speaker
       - JBL_PORT=80 # Port of the JBL speaker
       - JBL_PIN=1234 # PIN of the JBL speaker
       - INTERVAL=60 # Interval in seconds to send keep-alive requests
